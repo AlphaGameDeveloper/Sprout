@@ -1,0 +1,49 @@
+CompileFlags:
+  Remove:
+    - "-mlongcalls"
+    - "-mtext-section-literals"
+    - "-free"
+    - "-fipa-pta"
+    - "-fstrict-volatile-bitfields"
+    - "-fno-tree-switch-conversion"
+
+  Add:
+    - "-isystem /usr/include"
+    - "-nostdinc"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/lib/gcc/xtensa-lx106-elf/10.3.0/include"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include/c++/10.3.0"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/lib/gcc/xtensa-lx106-elf/10.3.0/include-fixed"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include/c++/10.3.0/xtensa-lx106-elf"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/lib/gcc/xtensa-lx106-elf/10.3.0/include/c++"
+    - "-isystem/home/damien/.platformio/packages/toolchain-xtensa/lib/gcc/xtensa-lx106-elf/10.3.0/include/c++/xtensa-lx106-elf"
+    - "-isystem/home/damien/.platformio/packages/framework-arduinoespressif8266/cores/esp8266"
+    - "-isystem/home/damien/.platformio/packages/framework-arduinoespressif8266/variants/nodemcuv2"
+    - "-I/home/damien/.platformio/packages/framework-arduinoespressif8266/cores/esp8266"
+    - "-I/home/damien/.platformio/packages/framework-arduinoespressif8266/variants/nodemcuv2"
+    - "-nostdinc"
+    - "-DARDUINO=10805"
+    - "-DARDUINO_ARCH_ESP8266"
+    - "-DESP8266"
+    - "-DXCHAL_INSTRAM1_VADDR=0"
+    - "-DXCHAL_INSTRAM0_VADDR=0"
+    - "-DXCHAL_HAVE_INTERRUPTS=1"
+    - "-D__SSIZE_TYPE__=long"
+    - "-D__SIZE_TYPE__=unsigned long"
+    - "-DCLANGD_WORKAROUND=1"
+    - "-DXCHAL_INSTRAM0_VADDR=1"
+    - "-Wno-pointer-arith"
+    - "-Wno-typedef-redefinition"
+    - "-DBEEPER_PIN=15"
+    - "-DSTATUS_LED_PIN=13"
+    - "-DPUFF_MONITOR_PIN=12"
+    - "-DSTATUS_BUILTIN_LED_ACTIVE_LOW=1"
+    - "-DSTATUS_LED_ACTIVE_LOW=0"
+    - "-I/usr/include"
+    - "-Iinclude"
+Diagnostics:
+
+  Suppress:
+    - typedef-redefinition
+    - redefinition-different-typedef
+    - unused-includes

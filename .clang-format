@@ -1,0 +1,59 @@
+# .clang-format
+BasedOnStyle: Microsoft
+
+# --- General Formatting ---
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+IndentCaseBlocks: true
+IndentCaseLabels: true
+
+ColumnLimit: 100
+BreakBeforeBraces: Allman   # Microsoft-style braces
+
+# --- Includes ---
+IncludeBlocks: Preserve
+SortIncludes: false
+IncludeCategories:
+  - Regex: '^<Arduino\.h>'
+    Priority: 1
+    SortPriority: 0
+    
+  - Regex: '^<.*>$'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 3
+
+BraceWrapping:
+  AfterControlStatement: true
+  AfterFunction: true
+  AfterClass: true
+  AfterNamespace: false
+  BeforeElse: true
+  IndentBraces: true
+  
+# --- Pointers & References ---
+PointerAlignment: Left    # Microsoft conventions
+SpaceBeforeParens: ControlStatements
+
+# --- Line Breaks & Wrapping ---
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+
+# --- Namespaces ---
+# NamespaceIndentation: Inner
+
+# --- Comments & Documentation ---
+ReflowComments: true
+IndentWrappedFunctionNames: true
+
+# --- C++ Specific Tweaks ---
+SpaceAfterTemplateKeyword: true
+Cpp11BracedListStyle: true
+FixNamespaceComments: true
+
+# --- Experimental: Cleaner Struct/Enum Layout ---
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true

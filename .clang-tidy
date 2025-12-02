@@ -1,0 +1,5 @@
+Checks: >
+  -*,
+  readability-magic-numbers,
+  modernize-use-nullptr,
+  bugprone-branch-clone
