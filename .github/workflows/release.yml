@@ -40,7 +40,7 @@ jobs:
         id: build_envs
         run: |
           set -e
-          PLATFORMS=("esp32dev" "uno") # Add more environments here in the future
+          PLATFORMS=("esp32") # Add more environments here in the future
           ASSETS=""
           NOTES=""
           for env in "${PLATFORMS[@]}"; do
