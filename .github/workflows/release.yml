@@ -28,7 +28,6 @@ jobs:
         with:
           path: |
             ~/.platformio
-            .pio
           key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
 
       - name: Install PlatformIO
@@ -43,27 +42,33 @@ jobs:
           PLATFORMS=("esp32") # Add more environments here in the future
           ASSETS=""
           NOTES=""
+          mkdir -p release_assets
           for env in "${PLATFORMS[@]}"; do
             echo "Building environment: $env"
             if pio run -e $env; then
               NOTES="$NOTES$env **IS** supported\n"
               BIN_FILE=".pio/build/$env/firmware.bin"
-              NEW_NAME="firmware-${env}-${{ env.BUILD_NUMBER }}.bin"
+              NEW_NAME="release_assets/firmware-${env}-${{ env.BUILD_NUMBER }}.bin"
               cp "$BIN_FILE" "$NEW_NAME"
               ASSETS="$ASSETS $NEW_NAME"
             else
               NOTES="$NOTES$env **IS NOT** supported\n"
             fi
           done
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          echo -e "$NOTES" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          # Write release notes to a file for body_file
+          echo -e "$NOTES" > release_assets/release_notes.txt
           echo "RELEASE_ASSETS=$ASSETS" >> $GITHUB_ENV
+          echo "RELEASE_NOTES_FILE=release_assets/release_notes.txt" >> $GITHUB_ENV
 
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag: build-${{ env.BUILD_NUMBER }}
-          name: Sprout Build ${{ env.BUILD_NUMBER }}
-          body: ${{ env.RELEASE_NOTES }}
+          tag_name: v${{ github.run_number }}
+          release_name: Sprout v${{ github.run_number }}
+          body_file: ${{ env.RELEASE_NOTES_FILE }}
+          draft: false
+          prerelease: false
           files: ${{ env.RELEASE_ASSETS }}
