@@ -2,3 +2,5 @@
 compile_commands.json
 .cache
 .env
+include/generated/
+include/generated/*

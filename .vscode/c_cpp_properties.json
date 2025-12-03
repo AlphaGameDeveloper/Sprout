@@ -481,6 +481,7 @@
             "defines": [
                 "WLAN_SSID=5PineViewLane",
                 "WLAN_PSK=castillo",
+                "WLAN_MODE=CONNECT",
                 "PLATFORMIO=60118",
                 "ARDUINO_ESP32_DEV",
                 "HAVE_CONFIG_H",

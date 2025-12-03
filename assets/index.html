@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>WakeOnLAN ESP32</title>
+        <link rel="stylesheet" href="/assets/style.css">
+    </head>
+
+    <body>
+        <header class="site-header">
+            <h1>WakeOnLAN ESP32</h1>
+            <p class="lead">Control devices on your LAN — simple and fast.</p>
+        </header>
+
+        <main class="container">
+            <section class="card">
+                <h2>Send Magic Packet</h2>
+                <form id="wol-form">
+                    <label for="mac">MAC Address</label>
+                    <input id="mac" name="mac" placeholder="AA:BB:CC:DD:EE:FF" pattern="[0-9A-Fa-f:.-]{17,}" required>
+
+                    <label for="broadcast">Broadcast IP</label>
+                    <input id="broadcast" name="broadcast" placeholder="192.168.1.255">
+
+                    <button id="send" type="submit">Wake</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Saved Hosts</h2>
+                <ul id="hosts" class="hosts"></ul>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <small>Built for ESP32 — responsive, offline-first.</small>
+        </footer>
+
+        <script src="/assets/app.js" defer></script>
+    </body>
+
+</html>
