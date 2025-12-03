@@ -41,24 +41,27 @@ jobs:
           set -e
           PLATFORMS=("esp32") # Add more environments here in the future
           ASSETS=""
-          NOTES=""
           mkdir -p release_assets
+          RELEASE_NOTES_FILE="release_assets/release_notes.txt"
+          # Clear previous file if exists
+          echo -n "" > "$RELEASE_NOTES_FILE"
+
           for env in "${PLATFORMS[@]}"; do
             echo "Building environment: $env"
             if pio run -e $env; then
-              NOTES="$NOTES$env **IS** supported\n"
+              echo "$env **IS** supported" >> "$RELEASE_NOTES_FILE"
               BIN_FILE=".pio/build/$env/firmware.bin"
               NEW_NAME="release_assets/firmware-${env}-${{ env.BUILD_NUMBER }}.bin"
               cp "$BIN_FILE" "$NEW_NAME"
               ASSETS="$ASSETS $NEW_NAME"
             else
-              NOTES="$NOTES$env **IS NOT** supported\n"
+              echo "$env **IS NOT** supported" >> "$RELEASE_NOTES_FILE"
             fi
           done
-          # Write release notes to a file for body_file
-          echo -e "$NOTES" > release_assets/release_notes.txt
+
           echo "RELEASE_ASSETS=$ASSETS" >> $GITHUB_ENV
-          echo "RELEASE_NOTES_FILE=release_assets/release_notes.txt" >> $GITHUB_ENV
+          echo "RELEASE_NOTES_FILE=$RELEASE_NOTES_FILE" >> $GITHUB_ENV
+
 
       - name: Create Release
         id: create_release
