@@ -1,0 +1,68 @@
+name: PlatformIO Build & Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  # needed for creating releases and uploading assets
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.platformio
+            .pio
+          key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Build all PlatformIO environments
+        id: build_envs
+        run: |
+          set -e
+          PLATFORMS=("esp32dev" "uno") # Add more environments here in the future
+          ASSETS=""
+          NOTES=""
+          for env in "${PLATFORMS[@]}"; do
+            echo "Building environment: $env"
+            if pio run -e $env; then
+              NOTES="$NOTES$env **IS** supported\n"
+              BIN_FILE=".pio/build/$env/firmware.bin"
+              NEW_NAME="firmware-${env}-${{ env.BUILD_NUMBER }}.bin"
+              cp "$BIN_FILE" "$NEW_NAME"
+              ASSETS="$ASSETS $NEW_NAME"
+            else
+              NOTES="$NOTES$env **IS NOT** supported\n"
+            fi
+          done
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo -e "$NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "RELEASE_ASSETS=$ASSETS" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: build-${{ env.BUILD_NUMBER }}
+          name: Sprout Build ${{ env.BUILD_NUMBER }}
+          body: ${{ env.RELEASE_NOTES }}
+          files: ${{ env.RELEASE_ASSETS }}
