@@ -10,7 +10,7 @@ permissions:
   contents: write  # needed for creating releases and uploading assets
 
 jobs:
-  build-and-release:
+  build-and-release-ci:
     runs-on: ubuntu-latest
     env:
       BUILD_NUMBER: ${{ github.run_number }}
@@ -43,22 +43,37 @@ jobs:
           ASSETS=""
           mkdir -p release_assets
           RELEASE_NOTES_FILE="release_assets/release_notes.txt"
-          # Clear previous file if exists
-          echo -n "" > "$RELEASE_NOTES_FILE"
+          echo "# Sprout Firmware Release v${{ env.BUILD_NUMBER }}" > "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
+          # list previous commits since last tag
+          git fetch --tags
+          LAST_TAG=$(git describe --tags --abbrev=0)
+          echo "## Changelog" >> "$RELEASE_NOTES_FILE"
+          echo "Changes since last tag ($LAST_TAG):" >> "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
+          git log "$LAST_TAG..HEAD" --pretty=format:'* %h %s' >> "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
+          echo "## Compatibility" >> "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
 
           for env in "${PLATFORMS[@]}"; do
             echo "Building environment: $env"
             if pio run -e $env; then
-              echo "$env **IS** supported" >> "$RELEASE_NOTES_FILE"
+              echo "* $env **IS** supported" >> "$RELEASE_NOTES_FILE"
               BIN_FILE=".pio/build/$env/firmware.bin"
-              NEW_NAME="release_assets/firmware-${env}-${{ env.BUILD_NUMBER }}.bin"
+              NEW_NAME="release_assets/sprout-firmware-${env}-v${{ env.BUILD_NUMBER }}.bin"
               cp "$BIN_FILE" "$NEW_NAME"
               ASSETS="$ASSETS $NEW_NAME"
             else
-              echo "$env **IS NOT** supported" >> "$RELEASE_NOTES_FILE"
+              echo "* $env **IS NOT** supported" >> "$RELEASE_NOTES_FILE"
             fi
           done
 
+          echo "---" >> "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
+          echo "Note: Make sure to flash the correct firmware binary for your device." >> "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
+          
           echo "RELEASE_ASSETS=$ASSETS" >> $GITHUB_ENV
           echo "RELEASE_NOTES_FILE=$RELEASE_NOTES_FILE" >> $GITHUB_ENV
 
