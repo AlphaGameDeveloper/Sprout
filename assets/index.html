@@ -10,21 +10,26 @@
 
     <body>
         <header class="site-header">
-            <h1>WakeOnLAN ESP32</h1>
-            <p class="lead">Control devices on your LAN — simple and fast.</p>
+            <h1>Sprout <span id="version" style="font-weight: bold; font-style: italic;">v</span></h1>
+            <p class="lead">Wake up computers on your local network — quick and easy.</p>
         </header>
 
         <main class="container">
             <section class="card">
-                <h2>Send Magic Packet</h2>
+                <h2>Wake a device</h2>
+                <p class="muted">Enter the device MAC and an optional name. The ESP32 will send the wake packet for you.
+                </p>
                 <form id="wol-form">
-                    <label for="mac">MAC Address</label>
+                    <label for="name">Device name (optional)</label>
+                    <input id="name" name="name" placeholder="My PC or Living Room Server">
+
+                    <label for="mac">MAC address</label>
                     <input id="mac" name="mac" placeholder="AA:BB:CC:DD:EE:FF" pattern="[0-9A-Fa-f:.-]{17,}" required>
 
-                    <label for="broadcast">Broadcast IP</label>
-                    <input id="broadcast" name="broadcast" placeholder="192.168.1.255">
+                    <label for="broadcast">Broadcast IP (optional)</label>
+                    <input id="broadcast" name="broadcast" placeholder="255.255.255.255">
 
-                    <button id="send" type="submit">Wake</button>
+                    <button id="send" type="submit">Send wake packet</button>
                 </form>
             </section>
 
@@ -35,7 +40,11 @@
         </main>
 
         <footer class="site-footer">
-            <small>Built for ESP32 — responsive, offline-first.</small>
+            <small>Made with ❤️ by Damien Boisvert (<a target="_blank"
+                    href="https://linkedin.com/in/damienboisvert">LinkedIn</a> | <a target="_blank"
+                    href="https://github.com/AlphaGameDeveloper">GitHub</a>).</small><br />
+            <small>Sprout is open source &bull; <a href="https://github.com/AlphaGameDeveloper/Sprout"
+                    target="_blank">GitHub</a></small>
         </footer>
 
         <script src="/assets/app.js" defer></script>

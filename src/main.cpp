@@ -66,6 +66,18 @@ static const char* wlan_psk_raw = nullptr;
 
 #include <cstring>
 
+#ifndef FIRMWARE_VERSION
+static const char* firmware_version_raw = "unknown";
+#else
+/* Stringify the macro token so we always have a literal, accepting both
+   unquoted tokens (e.g. -DFIRMWARE_VERSION=v1) and quoted values. */
+#define _STR_FW_HELPER(x) #x
+#define _STR_FW(x) _STR_FW_HELPER(x)
+static const char* firmware_version_raw = _STR_FW(FIRMWARE_VERSION);
+#undef _STR_FW_HELPER
+#undef _STR_FW
+#endif
+
 // Normalize runtime string: strip surrounding double-quotes if present
 static void normalize_copy(const char* src, char* dst, size_t dst_sz)
 {
@@ -305,6 +317,12 @@ void startWebServer()
     server.on("/", handleRoot);
     server.on("/wol", handleWol);
     server.on("/api/wake", HTTP_POST, handleApiWake);
+    server.on("/api/version",
+              []()
+              {
+                  String v = firmware_version_raw;
+                  server.send(200, "text/plain", v);
+              });
     // Serve any /assets/* requests from embedded assets; fall back to 404
     server.onNotFound(
         []()
