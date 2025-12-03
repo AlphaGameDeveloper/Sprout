@@ -38,7 +38,7 @@ jobs:
       - name: Build all PlatformIO environments
         id: build_envs
         run: |
-          set -e
+          set -ex
           PLATFORMS=("esp32") # Add more environments here in the future
           ASSETS=""
           mkdir -p release_assets
@@ -47,7 +47,7 @@ jobs:
           echo "" >> "$RELEASE_NOTES_FILE"
           # list previous commits since last tag
           git fetch --tags
-          LAST_TAG=$(git describe --tags --abbrev=0)
+          LAST_TAG=$(git describe --tags --abbrev=0 --always)
           echo "## Changelog" >> "$RELEASE_NOTES_FILE"
           echo "Changes since last tag ($LAST_TAG):" >> "$RELEASE_NOTES_FILE"
           echo "" >> "$RELEASE_NOTES_FILE"
