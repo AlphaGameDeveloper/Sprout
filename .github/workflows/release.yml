@@ -74,4 +74,9 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_FILE }}
           draft: false
           prerelease: false
-          files: ${{ env.RELEASE_ASSETS }}
+
+      - name: Upload Binaries
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload --clobber v${{ github.run_number }} ${{ env.RELEASE_ASSETS }}
