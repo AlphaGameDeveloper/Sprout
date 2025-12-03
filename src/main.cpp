@@ -4,6 +4,10 @@
 // https://opensource.org/licenses/MIT
 
 #include <Arduino.h>
+#include <WiFi.h>
+#include <WebServer.h>
+#include "WakeOnLan.h"
+#include "generated/assets.h"
 #include "Logger.h"
 // Use the board-defined LED pin when available; fall back to GPIO2 which is
 // the on-board LED on many ESP32 development boards.
@@ -14,10 +18,6 @@
 // Blink interval in milliseconds
 static const unsigned long BLINK_MS         = 1000UL;
 static const unsigned long SERIAL_BAUD_RATE = 115200;
-
-#include <WiFi.h>
-#include <WebServer.h>
-#include "WakeOnLan.h"
 
 // Default MAC at build time: pass -DDEFAULT_MAC="\"d8:43:ae:54:52:01\"" in build flags
 #ifndef DEFAULT_MAC
@@ -105,21 +105,101 @@ static const char* get_wlan_psk()
 
 WebServer server(80);
 
-// HTML page served at /
-const char* INDEX_HTML =
-    "<!doctype html><html><head><meta charset=\"utf-8\"><title>WakeOnLan ESP32</title>"
-    "</head><body><h1>Wake On LAN</h1>"
-    "<p>Default target MAC: <code>" DEFAULT_MAC_LITERAL "</code></p>"
-    "<form action=\"/wol\" method=\"get\">"
-    "MAC: <input name=mac placeholder=\"AA:BB:CC:DD:EE:FF\" value=\"" DEFAULT_MAC_LITERAL "\">"
-    "<input type=\"submit\" value=\"Wake\">"
-    "</form>"
-    "</body></html>";
+// Helper: find embedded asset by path (exact match)
+static const struct asset* find_asset(const char* path)
+{
+    if (!path)
+        return nullptr;
+    // Try exact match
+    for (size_t i = 0; i < embedded_assets_count; ++i)
+    {
+        if (strcmp(embedded_assets[i].path, path) == 0)
+            return &embedded_assets[i];
+    }
+    // Try with leading slash (if not provided)
+    if (path[0] != '/')
+    {
+        String withSlash = String("/") + String(path);
+        for (size_t i = 0; i < embedded_assets_count; ++i)
+        {
+            if (String(embedded_assets[i].path) == withSlash)
+                return &embedded_assets[i];
+        }
+    }
+    return nullptr;
+}
 
-// Handler: serve the index
+// Simple MIME type detection by extension
+static const char* mime_for_path(const String& p)
+{
+    if (p.endsWith(".html") || p.endsWith(".htm"))
+        return "text/html";
+    if (p.endsWith(".js"))
+        return "application/javascript";
+    if (p.endsWith(".css"))
+        return "text/css";
+    if (p.endsWith(".json"))
+        return "application/json";
+    if (p.endsWith(".png"))
+        return "image/png";
+    if (p.endsWith(".jpg") || p.endsWith(".jpeg"))
+        return "image/jpeg";
+    if (p.endsWith(".svg"))
+        return "image/svg+xml";
+    return "text/plain";
+}
+
+// Serve an embedded asset (gzip-aware)
+static void serve_embedded(const char* cpath)
+{
+    L_INFOF("Serving embedded asset: %s", cpath);
+    const struct asset* a = find_asset(cpath);
+    if (!a)
+    {
+        server.send(404, "text/plain", "Not found");
+        return;
+    }
+
+    String      path = String(cpath);
+    const char* mime = mime_for_path(path);
+
+    // Get raw client and write full HTTP response to avoid conflicting headers
+    WiFiClient client = server.client();
+    if (!client || !client.connected())
+    {
+        // fallback to server's send
+        if (a->gz)
+            server.sendHeader("Content-Encoding", "gzip");
+        server.send(200, mime, "");
+        return;
+    }
+
+    // Build and send status + headers
+    client.print("HTTP/1.1 200 OK\r\n");
+    client.print("Content-Type: ");
+    client.print(mime);
+    client.print("\r\n");
+    if (a->gz)
+    {
+        client.print("Content-Encoding: gzip\r\n");
+    }
+    client.print("Content-Length: ");
+    client.print((unsigned long)a->len);
+    client.print("\r\n");
+    client.print("Connection: close\r\n");
+    client.print("\r\n");
+
+    // Write raw gzipped bytes
+    client.write(a->data, a->len);
+    client.flush();
+    // close connection
+    client.stop();
+}
+
+// Handler: serve root -> redirect to embedded index under /assets/
 void handleRoot()
 {
-    server.send(200, "text/html", INDEX_HTML);
+    serve_embedded("/index.html");
 }
 
 // Handler: /wol?mac=...
@@ -144,11 +224,108 @@ void handleWol()
     }
 }
 
+// Handler: POST /api/wake — accepts JSON { mac: string, broadcast?: string }
+void handleApiWake()
+{
+    if (server.method() != HTTP_POST)
+    {
+        server.send(405, "text/plain", "Method Not Allowed");
+        return;
+    }
+
+    String body = server.arg("plain");
+    if (body.length() == 0)
+    {
+        server.send(400, "text/plain", "Empty body");
+        return;
+    }
+
+    // Very small JSON parsing — look for "mac" and "broadcast" values.
+    // This avoids pulling in a heavy JSON library on the ESP.
+    auto extract = [](const String& s, const char* key) -> String
+    {
+        String k   = String("\"") + key + String("\"") + String(":");
+        int    idx = s.indexOf(k);
+        if (idx < 0)
+            return String();
+        idx += k.length();
+        // skip whitespace
+        while (idx < s.length() && isWhitespace(s[idx]))
+            idx++;
+        // Accept string value or bareword
+        if (s[idx] == '"')
+        {
+            idx++;
+            int end = s.indexOf('"', idx);
+            if (end < 0)
+                return String();
+            return s.substring(idx, end);
+        }
+        // bare token until comma or brace
+        int end = idx;
+        while (end < s.length() && s[end] != ',' && s[end] != '}' && s[end] != '\n' &&
+               s[end] != '\r')
+            end++;
+        String token = s.substring(idx, end);
+        token.trim();
+        return token;
+    };
+
+    String mac       = extract(body, "mac");
+    String broadcast = extract(body, "broadcast");
+
+    if (mac.length() == 0)
+    {
+        server.send(400, "text/plain", "Missing 'mac' in JSON body");
+        return;
+    }
+
+    L_INFOF("API WOL request for %s (broadcast=%s)", mac.c_str(), broadcast.c_str());
+
+    bool ok;
+    if (broadcast.length())
+        ok = WakeOnLan::send(mac.c_str(), broadcast.c_str());
+    else
+        ok = WakeOnLan::send(mac.c_str());
+
+    if (ok)
+    {
+        server.send(200, "application/json", String("{\"status\":\"ok\",\"mac\":\"") + mac + "\"}");
+    }
+    else
+    {
+        server.send(500, "application/json",
+                    String("{\"status\":\"error\",\"mac\":\"") + mac + "\"}");
+    }
+}
+
 // Start WiFi (AP or CONNECT) and HTTP server
 void startWebServer()
 {
     server.on("/", handleRoot);
     server.on("/wol", handleWol);
+    server.on("/api/wake", HTTP_POST, handleApiWake);
+    // Serve any /assets/* requests from embedded assets; fall back to 404
+    server.onNotFound(
+        []()
+        {
+            String uri = server.uri();
+            // ensure paths under /assets/ are served
+            if (uri == "/")
+            {
+                serve_embedded("/index.html");
+                return;
+            }
+            if (uri.startsWith("/assets/"))
+            {
+                // strip '/assets' prefix
+                String assetPath = uri.substring(8); // 8 = length of "/assets/"
+                serve_embedded(assetPath.c_str());
+                return;
+            }
+            // Not an asset -> default 404
+            server.send(404, "text/plain", "Not found");
+        });
 
     // Decide mode based on runtime wlan_mode_raw string. Accepts: CONNECT or AP or numeric '2'/'1'.
     bool want_connect = false;
