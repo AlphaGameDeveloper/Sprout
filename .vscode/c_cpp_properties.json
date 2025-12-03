@@ -10,6 +10,7 @@
             "includePath": [
                 "/mnt/archive/code/Arduino/WakeOnLanESP32/include",
                 "/mnt/archive/code/Arduino/WakeOnLanESP32/src",
+                "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -235,7 +236,6 @@
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
@@ -246,6 +246,7 @@
                 "path": [
                     "/mnt/archive/code/Arduino/WakeOnLanESP32/include",
                     "/mnt/archive/code/Arduino/WakeOnLanESP32/src",
+                    "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -471,7 +472,6 @@
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
-                    "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                     "/home/damien/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
