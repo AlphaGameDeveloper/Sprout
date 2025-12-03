@@ -10,7 +10,7 @@ permissions:
   contents: write  # needed for creating releases and uploading assets
 
 jobs:
-  build-and-release-ci:
+  build-and-release:
     runs-on: ubuntu-latest
     env:
       BUILD_NUMBER: ${{ github.run_number }}
