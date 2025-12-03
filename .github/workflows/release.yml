@@ -71,7 +71,7 @@ jobs:
         with:
           tag_name: v${{ github.run_number }}
           release_name: Sprout v${{ github.run_number }}
-          body_file: ${{ env.RELEASE_NOTES_FILE }}
+          body_path: ${{ env.RELEASE_NOTES_FILE }}
           draft: false
           prerelease: false
           files: ${{ env.RELEASE_ASSETS }}
